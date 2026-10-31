@@ -534,12 +534,16 @@ export { bassMidiForPitchClass };
  * - "t": Soft fingertip ghost tap on front tapa (15% volume)
  * - "-": Rest / silence
  */
-export function playCajonHit(hitType: "B" | "S" | "t" | "T" | "-") {
+export function playCajonHit(
+  hitType: "B" | "S" | "t" | "T" | "-",
+  scheduledTime?: number,
+  volume = 1.0
+) {
   if (hitType === "-") return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
-  const now = ctx.currentTime;
+  const now = scheduledTime !== undefined ? scheduledTime : ctx.currentTime;
 
   if (hitType === "B") {
     // 1. Deep Sub Thump (52Hz bottom with pitch glide from 115Hz)
@@ -550,7 +554,7 @@ export function playCajonHit(hitType: "B" | "S" | "t" | "T" | "-") {
     osc.frequency.exponentialRampToValueAtTime(50, now + 0.11);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.68, now + 0.005);
+    gain.gain.linearRampToValueAtTime(0.68 * volume, now + 0.005);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
 
     osc.connect(gain);
@@ -565,7 +569,7 @@ export function playCajonHit(hitType: "B" | "S" | "t" | "T" | "-") {
     bodyOsc.frequency.setValueAtTime(110, now);
     bodyOsc.frequency.exponentialRampToValueAtTime(68, now + 0.08);
 
-    bodyGain.gain.setValueAtTime(0.3, now);
+    bodyGain.gain.setValueAtTime(0.3 * volume, now);
     bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
 
     bodyOsc.connect(bodyGain);

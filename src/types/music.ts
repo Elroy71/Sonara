@@ -13,6 +13,11 @@ export interface ChordToken {
    */
   beats?: number;
   /**
+   * MIDI melody pitch sequence (one per beat) for realistic hymn melody accompaniment.
+   * E.g. [67, 67, 65, 64] for G4-G4-F4-E4.
+   */
+  melody?: number[];
+  /**
    * Marks passing / bridge chords in Mahir mode so musicians can distinguish
    * main structural chords from bridge/passing harmonies.
    */

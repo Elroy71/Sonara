@@ -5,6 +5,7 @@ import {
   noteToMidi,
   playChordPreview,
   playInstrumentNote,
+  playCajonHit,
 } from "@/lib/audioSynth";
 import { parseChordSymbol, getChordDiagram } from "@/data/chordDiagrams";
 import { transposeChord, getNoteIndex } from "@/lib/transpose";
@@ -19,6 +20,7 @@ export interface AccompanimentChordStep {
   lineIndex: number;
   tokenIndex: number;
   lyrics: string;
+  melody?: number[];
   isBridge?: boolean;
 }
 
@@ -170,6 +172,7 @@ export class SongAccompanimentEngine {
             lineIndex: lineIdx,
             tokenIndex: originalIdx,
             lyrics: tok.lyrics || "",
+            melody: tok.melody,
             isBridge: Boolean(tok.isBridge),
           });
         });
@@ -348,7 +351,13 @@ export class SongAccompanimentEngine {
     const isNewChord = beatInStep === 0;
     const isDownbeat = beatInBar === 0;
 
-    // 1. PROFESSIONAL PIANO ACCOMPANIMENT
+    // Melody note for this exact beat (transposed along with chords)
+    const melodyMidi =
+      step.melody && step.melody[beatInStep] !== undefined
+        ? step.melody[beatInStep] + this.transposeSemitones
+        : null;
+
+    // 1. PROFESSIONAL PIANO ACCOMPANIMENT (With Lead Melody on Right Hand)
     if (this.mixerConfig.pianoEnabled && this.mixerConfig.pianoVolume > 0) {
       const vol = this.mixerConfig.pianoVolume * this.mixerConfig.masterVolume;
       const bassPc = parsed.bassIdx !== null ? parsed.bassIdx : parsed.rootIdx;
@@ -360,30 +369,42 @@ export class SongAccompanimentEngine {
         playInstrumentNote(lowBassMidi + 12, "piano", vol * 0.65, scheduledTime + 0.005);
       }
 
-      // Right hand: broken chord / arpeggio flowing phrasing
-      const pianoNotes = diagram.piano.notes;
-      if (pianoNotes.length > 0) {
-        if (isNewChord) {
-          // Play warm full chord spread (sample-accurate human spread)
-          pianoNotes.forEach((n, i) => {
-            const midi = noteToMidi(n);
-            playInstrumentNote(midi, "piano", vol * (0.55 + i * 0.05), scheduledTime + i * 0.012);
-          });
-        } else {
-          // Flowing broken chord arpeggio on subsequent beats
-          const arpeggioIdx = beatInStep % pianoNotes.length;
-          const midi = noteToMidi(pianoNotes[arpeggioIdx]);
-          playInstrumentNote(midi, "piano", vol * 0.65, scheduledTime);
-          // Add gentle high octave sparkle
-          if (beatInStep === 1 || beatInStep === 3) {
-            const highMidi = noteToMidi(pianoNotes[pianoNotes.length - 1]);
-            playInstrumentNote(highMidi, "piano", vol * 0.45, scheduledTime + 0.06);
+      // Right hand: Lead Melody Note (if provided) + warm chord harmony voicing
+      if (melodyMidi !== null) {
+        // Singing lead melody note on top
+        playInstrumentNote(melodyMidi, "piano", vol * 0.98, scheduledTime);
+
+        // Soft harmonic bed note below the melody note
+        const pianoNotes = diagram.piano.notes;
+        if (pianoNotes.length > 0) {
+          const chordMidi1 = noteToMidi(pianoNotes[0]);
+          const chordMidi2 = pianoNotes.length > 1 ? noteToMidi(pianoNotes[1]) : chordMidi1;
+          const harmMidi = chordMidi2 < melodyMidi ? chordMidi2 : chordMidi1;
+          playInstrumentNote(harmMidi, "piano", vol * 0.45, scheduledTime + 0.008);
+        }
+      } else {
+        // Fallback: flowing broken chord arpeggio
+        const pianoNotes = diagram.piano.notes;
+        if (pianoNotes.length > 0) {
+          if (isNewChord) {
+            pianoNotes.forEach((n, i) => {
+              const midi = noteToMidi(n);
+              playInstrumentNote(midi, "piano", vol * (0.55 + i * 0.05), scheduledTime + i * 0.012);
+            });
+          } else {
+            const arpeggioIdx = beatInStep % pianoNotes.length;
+            const midi = noteToMidi(pianoNotes[arpeggioIdx]);
+            playInstrumentNote(midi, "piano", vol * 0.65, scheduledTime);
+            if (beatInStep === 1 || beatInStep === 3) {
+              const highMidi = noteToMidi(pianoNotes[pianoNotes.length - 1]);
+              playInstrumentNote(highMidi, "piano", vol * 0.45, scheduledTime + 0.06);
+            }
           }
         }
       }
     }
 
-    // 2. PROFESSIONAL ACOUSTIC GUITAR ACCOMPANIMENT
+    // 2. PROFESSIONAL ACOUSTIC GUITAR ACCOMPANIMENT (With Lead Melody Pluck)
     if (this.mixerConfig.guitarEnabled && this.mixerConfig.guitarVolume > 0) {
       const vol = this.mixerConfig.guitarVolume * this.mixerConfig.masterVolume;
       const frets = diagram.guitar.frets;
@@ -392,49 +413,72 @@ export class SongAccompanimentEngine {
         .filter((s) => s.fret >= 0);
 
       if (sounding.length > 0) {
-        if (isNewChord || isDownbeat) {
-          // Beat 1: Thumb picks lowest root bass string + gentle downstroke sweep
-          const bassString = sounding[0];
-          const bassMidi = 40 + [0, 5, 10, 15, 19, 24][bassString.stringIdx] + bassString.fret;
-          playInstrumentNote(bassMidi, "guitar", vol * 0.95, scheduledTime);
+        const bassString = sounding[0];
+        const bassMidi = 40 + [0, 5, 10, 15, 19, 24][bassString.stringIdx] + bassString.fret;
 
-          // Quick strum across strings
-          sounding.slice(1).forEach((s, idx) => {
-            const openMidi = [40, 45, 50, 55, 59, 64][s.stringIdx];
-            const midi = openMidi + s.fret;
-            playInstrumentNote(midi, "guitar", vol * 0.65, scheduledTime + (idx + 1) * 0.016);
-          });
-        } else if (beatInStep % 2 === 1) {
-          // Beat 2 / 4: Light acoustic upstroke on treble strings (strings 3, 2, 1)
-          const trebles = sounding.slice(-3).reverse();
-          trebles.forEach((s, idx) => {
-            const openMidi = [40, 45, 50, 55, 59, 64][s.stringIdx];
-            const midi = openMidi + s.fret;
-            playInstrumentNote(midi, "guitar", vol * 0.5, scheduledTime + idx * 0.014);
-          });
+        if (melodyMidi !== null) {
+          // Play the hymn melody on acoustic guitar
+          playInstrumentNote(melodyMidi, "guitar", vol * 0.92, scheduledTime);
+
+          // On downbeat or new chord, thumb plucks root bass string
+          if (isNewChord || isDownbeat) {
+            playInstrumentNote(bassMidi, "guitar", vol * 0.75, scheduledTime);
+          }
+
+          // Gentle acoustic midrange strum to fill out the acoustic body
+          if (sounding.length >= 2) {
+            const midString = sounding[Math.min(2, sounding.length - 1)];
+            const midMidi = [40, 45, 50, 55, 59, 64][midString.stringIdx] + midString.fret;
+            playInstrumentNote(midMidi, "guitar", vol * 0.42, scheduledTime + 0.018);
+          }
         } else {
-          // Mid-beat arpeggio pluck
-          const midString = sounding[Math.min(2, sounding.length - 1)];
-          const openMidi = [40, 45, 50, 55, 59, 64][midString.stringIdx];
-          playInstrumentNote(openMidi + midString.fret, "guitar", vol * 0.55, scheduledTime);
+          // Fallback pattern
+          if (isNewChord || isDownbeat) {
+            playInstrumentNote(bassMidi, "guitar", vol * 0.95, scheduledTime);
+            sounding.slice(1).forEach((s, idx) => {
+              const openMidi = [40, 45, 50, 55, 59, 64][s.stringIdx];
+              const midi = openMidi + s.fret;
+              playInstrumentNote(midi, "guitar", vol * 0.65, scheduledTime + (idx + 1) * 0.016);
+            });
+          } else if (beatInStep % 2 === 1) {
+            const trebles = sounding.slice(-3).reverse();
+            trebles.forEach((s, idx) => {
+              const openMidi = [40, 45, 50, 55, 59, 64][s.stringIdx];
+              const midi = openMidi + s.fret;
+              playInstrumentNote(midi, "guitar", vol * 0.5, scheduledTime + idx * 0.014);
+            });
+          } else {
+            const midString = sounding[Math.min(2, sounding.length - 1)];
+            const openMidi = [40, 45, 50, 55, 59, 64][midString.stringIdx];
+            playInstrumentNote(openMidi + midString.fret, "guitar", vol * 0.55, scheduledTime);
+          }
         }
       }
     }
 
-    // 3. PROFESSIONAL BASS GUITAR ACCOMPANIMENT
+    // 3. PROFESSIONAL BASS GUITAR & KICK DRUM LOCK
     if (this.mixerConfig.bassEnabled && this.mixerConfig.bassVolume > 0) {
       const vol = this.mixerConfig.bassVolume * this.mixerConfig.masterVolume;
       const bassPc = parsed.bassIdx !== null ? parsed.bassIdx : parsed.rootIdx;
       // Target E1..D#2 (MIDI 28..39)
       const bassMidi = 28 + (((bassPc - 4) % 12) + 12) % 12;
 
-      if (isNewChord || isDownbeat) {
-        // Deep round root/slash bass note with authority
-        playInstrumentNote(bassMidi, "bass", vol * 0.95, scheduledTime);
-      } else if (beatInStep === 2) {
-        // 5th interval pulse on beat 3 (7 semitones up)
-        const fifthMidi = bassMidi + 7;
-        playInstrumentNote(fifthMidi, "bass", vol * 0.6, scheduledTime);
+      // Kick drum rhythm lock:
+      // In 4/4 time: Kick hits on Beat 1 (beat 0) and Beat 3 (beat 2)
+      // In 2-beat measures: Kick hits on Beat 0
+      const isKickBeat =
+        isDownbeat ||
+        isNewChord ||
+        beatInBar === 2 ||
+        (step.durationBeats <= 2 && beatInStep === 0);
+
+      if (isKickBeat) {
+        // Kick drum thump (acoustic kick punch)
+        playCajonHit("B", scheduledTime, vol * 0.85);
+
+        // Root bass note on beat 1 / new chord; 5th on beat 3
+        const targetBassMidi = beatInBar === 2 && !isNewChord ? bassMidi + 7 : bassMidi;
+        playInstrumentNote(targetBassMidi, "bass", vol * 0.95, scheduledTime);
       } else if (beatInStep === step.durationBeats - 1) {
         // Passing note into next chord
         const nextStep = this.chordSteps[(this.currentStepIndex + 1) % this.chordSteps.length];
@@ -442,10 +486,12 @@ export class SongAccompanimentEngine {
           const nextParsed = parseChordSymbol(nextStep.transposedChord);
           const nextBassPc = nextParsed.bassIdx !== null ? nextParsed.bassIdx : nextParsed.rootIdx;
           const nextMidi = 28 + (((nextBassPc - 4) % 12) + 12) % 12;
-          // Step 1 semitone or 2 semitones away from target
           const passingMidi = nextMidi > bassMidi ? nextMidi - 1 : nextMidi + 1;
-          playInstrumentNote(passingMidi, "bass", vol * 0.5, scheduledTime);
+          playInstrumentNote(passingMidi, "bass", vol * 0.55, scheduledTime);
         }
+      } else {
+        // Light ghost tap on secondary beats
+        playCajonHit("t", scheduledTime, vol * 0.35);
       }
     }
   }
