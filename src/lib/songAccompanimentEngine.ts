@@ -262,10 +262,39 @@ export class SongAccompanimentEngine {
     if (index >= 0 && index < this.chordSteps.length) {
       this.currentStepIndex = index;
       this.currentBeatInStep = 0;
-      if (this.isPlaying) {
-        this.notifyStep(this.chordSteps[index], index);
+
+      const beatsPerBar = this.timeSignature === "3/4" ? 3 : this.timeSignature === "6/8" ? 6 : 4;
+      const cumulativeBeats = this.chordSteps
+        .slice(0, index)
+        .reduce((acc, s) => acc + s.durationBeats, 0);
+      this.currentBarNumber = 1 + Math.floor(cumulativeBeats / beatsPerBar);
+      this.currentBeatInBar = cumulativeBeats % beatsPerBar;
+
+      if (this.ctx && this.isPlaying) {
+        this.nextBeatTime = this.ctx.currentTime + 0.04;
       }
+
+      this.notifyStep(this.chordSteps[index], index);
+      this.notifyBeat(this.currentBarNumber, this.currentBeatInBar + 1);
     }
+  }
+
+  public rewind(stepsCount = 1) {
+    if (this.currentStepIndex === 0 && this.currentBeatInStep === 0) return;
+    if (this.currentBeatInStep > 1) {
+      // Return to start of current chord
+      this.jumpToStep(this.currentStepIndex);
+    } else {
+      // Step back to previous chord
+      const prevIdx = Math.max(0, this.currentStepIndex - stepsCount);
+      this.jumpToStep(prevIdx);
+    }
+  }
+
+  public forward(stepsCount = 1) {
+    if (this.currentStepIndex >= this.chordSteps.length - 1) return;
+    const nextIdx = Math.min(this.chordSteps.length - 1, this.currentStepIndex + stepsCount);
+    this.jumpToStep(nextIdx);
   }
 
   private startScheduler() {
