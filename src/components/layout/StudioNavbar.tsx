@@ -3,51 +3,16 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Music2,
-  Sliders,
-  GraduationCap,
-  Sparkles,
-  Users,
-  Sun,
-  Moon,
-  Heart,
-  Guitar,
-} from "lucide-react";
+import { Sun, Moon, Bookmark, User } from "lucide-react";
 import { useMusicApp } from "@/context/MusicAppContext";
 import { InstrumentType } from "@/types/music";
 
 const NAV_ITEMS = [
-  {
-    href: "/",
-    label: "Katalog & Chord",
-    badge: "P0",
-    icon: Music2,
-  },
-  {
-    href: "/practice",
-    label: "Alat Latihan",
-    badge: "P0",
-    icon: Sliders,
-  },
-  {
-    href: "/courses",
-    label: "Kursus & Progres",
-    badge: "P1",
-    icon: GraduationCap,
-  },
-  {
-    href: "/ai-studio",
-    label: "AI Audio Studio",
-    badge: "P1",
-    icon: Sparkles,
-  },
-  {
-    href: "/community",
-    label: "Komunitas & Band",
-    badge: "P2",
-    icon: Users,
-  },
+  { href: "/", label: "Katalog & Chord" },
+  { href: "/practice", label: "Alat Latihan" },
+  { href: "/courses", label: "Kursus" },
+  { href: "/ai-studio", label: "Studio Audio" },
+  { href: "/community", label: "Komunitas" },
 ];
 
 export function StudioNavbar() {
@@ -59,84 +24,75 @@ export function StudioNavbar() {
     preferredInstrument,
     setPreferredInstrument,
     setCatalogFilter,
+    activeRole,
   } = useMusicApp();
 
+  const roleBadgeLabel =
+    activeRole === "super_admin"
+      ? "Super Admin"
+      : activeRole === "contributor"
+      ? "Contributor"
+      : "User";
+
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-950/85 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-black flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-500/30 group-hover:scale-105 transition-transform">
-            <img
-              src="/icon-sonara.png"
-              alt="Sonara Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">
-                Son<span className="text-amber-400">ara</span>
-              </span>
-              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                v0.2 MVP
-              </span>
+    <header className="sticky top-0 z-40 border-b border-zinc-300 dark:border-zinc-800 bg-[#f6f5f2]/95 dark:bg-[#0d0d0f]/95 backdrop-blur-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Left: Brand Logo + Navigation */}
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-3 shrink-0">
+            <div className="w-9 h-9 rounded-md overflow-hidden bg-black border border-zinc-800 flex items-center justify-center">
+              <img
+                src="/icon-sonara.png"
+                alt="Sonara"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
-              Music Learning, Practice Tools & AI Analysis
-            </p>
-          </div>
-        </Link>
+            <span className="font-bold text-lg tracking-tight text-zinc-900 dark:text-zinc-100">
+              Sonara
+            </span>
+          </Link>
 
-        {/* Desktop Main Navigation */}
-        <nav className="hidden lg:flex items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-xl border border-slate-200/70 dark:border-slate-800">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.href === "/"
-                ? pathname === "/" || pathname.startsWith("/songs")
-                : pathname.startsWith(item.href);
+          {/* Desktop Navigation: Clean text only, no icons, no P0/P1/P2 badges */}
+          <nav className="hidden lg:flex items-center gap-6">
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/" || pathname.startsWith("/songs")
+                  : pathname.startsWith(item.href);
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  isActive
-                    ? "bg-emerald-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{item.label}</span>
-                <span
-                  className={`text-[9px] font-mono px-1 rounded ${
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative py-5 text-sm transition-colors ${
                     isActive
-                      ? "bg-slate-950/20 text-slate-950"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      ? "text-zinc-950 dark:text-white font-semibold"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                   }`}
                 >
-                  {item.badge}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+                  {item.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
-        {/* Right Controls: Active Instrument, Favorites, Theme Toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Preferred Instrument Switcher (Visible on Mobile & Desktop) */}
-          <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
-            <Guitar className="w-3.5 h-3.5 text-emerald-500 mx-1 hidden sm:inline" />
+        {/* Right Controls: Active Instrument, Saved Songs, Profile Role, Theme Toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Instrument Selector */}
+          <div className="hidden sm:flex items-center border border-zinc-300 dark:border-zinc-800 rounded-md overflow-hidden bg-white dark:bg-zinc-900">
             {(["guitar", "bass", "piano"] as InstrumentType[]).map((inst) => (
               <button
                 key={inst}
                 type="button"
                 onClick={() => setPreferredInstrument(inst)}
-                className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-colors active:scale-95 ${
+                className={`px-2.5 py-1.5 text-xs font-medium transition-colors border-r last:border-r-0 border-zinc-200 dark:border-zinc-800 ${
                   preferredInstrument === inst
-                    ? "bg-emerald-500 text-slate-950"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-amber-500 text-zinc-950 font-semibold"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
                 }`}
               >
                 {inst === "guitar" ? "Gitar" : inst === "bass" ? "Bass" : "Piano"}
@@ -144,7 +100,7 @@ export function StudioNavbar() {
             ))}
           </div>
 
-          {/* Favorites Shortcut */}
+          {/* Saved Songs / Bookmark */}
           <Link
             href="/"
             onClick={() =>
@@ -153,25 +109,41 @@ export function StudioNavbar() {
                 onlyFavorites: !prev.onlyFavorites,
               }))
             }
-            title="Daftar Lagu Favorit Saya"
-            className="relative flex items-center gap-1 px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 hover:border-rose-500/50 transition-colors active:scale-95"
+            title="Lagu Tersimpan"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors"
           >
-            <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-            <span className="text-xs font-mono font-bold">{favoriteSongIds.length}</span>
+            <Bookmark className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span className="text-xs font-mono font-semibold">
+              {favoriteSongIds.length}
+            </span>
           </Link>
 
-          {/* Dark / Light Theme Toggle */}
+          {/* Profile & Active Role Button */}
+          <Link
+            href="/profile"
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-semibold transition-colors ${
+              pathname.startsWith("/profile")
+                ? "border-amber-500 bg-amber-500 text-zinc-950 font-bold"
+                : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-amber-500"
+            }`}
+          >
+            <User className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span className="hidden md:inline">Profil ·</span>
+            <span className="font-mono text-[11px]">{roleBadgeLabel}</span>
+          </Link>
+
+          {/* Dark / Light Mode Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
             aria-label="Ubah Tema Tampilan"
-            title={theme === "dark" ? "Ganti ke Light Mode" : "Ganti ke Dark Mode Studio"}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 hover:border-emerald-500/50 transition-colors active:scale-95"
+            title={theme === "dark" ? "Mode Terang" : "Mode Gelap"}
+            className="p-2 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors"
           >
             {theme === "dark" ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
-              <Moon className="w-4 h-4 text-slate-700" />
+              <Moon className="w-4 h-4 text-zinc-700" />
             )}
           </button>
         </div>

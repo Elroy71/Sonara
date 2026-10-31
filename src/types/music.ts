@@ -1,17 +1,43 @@
-export type InstrumentType = "guitar" | "bass" | "piano";
+export type InstrumentType = "guitar" | "bass" | "piano" | "cajon";
 
-export type DifficultyLevel = "Pemula" | "Menengah" | "Mahir";
+export type DifficultyLevel = "Pemula" | "Mahir";
 
 export type RightsStatus = "Licensed" | "Public Domain" | "Original Platform" | "Verified Partner";
 
 export interface ChordToken {
   chord: string;
   lyrics: string;
+  /**
+   * Exact beat count for this chord token in automated accompaniment.
+   * If omitted, the engine computes musically balanced bar phrases.
+   */
+  beats?: number;
+  /**
+   * Marks passing / bridge chords in Mahir mode so musicians can distinguish
+   * main structural chords from bridge/passing harmonies.
+   */
+  isBridge?: boolean;
 }
 
 export interface SongSection {
   id: string;
-  name: "Intro" | "Verse 1" | "Verse 2" | "Pre-Chorus" | "Chorus" | "Bridge" | "Interlude" | "Outro";
+  name:
+    | "Intro"
+    | "Verse"
+    | "Verse 1"
+    | "Verse 2"
+    | "Verse 3"
+    | "Verse 4"
+    | "Bait 1"
+    | "Bait 2"
+    | "Bait 3"
+    | "Refrain / Chorus"
+    | "Chorus / Refrain"
+    | "Chorus"
+    | "Refrain"
+    | "Bridge"
+    | "Interlude"
+    | "Outro";
   lines: ChordToken[][];
 }
 
@@ -19,10 +45,11 @@ export interface ChordChartArrangement {
   id: string;
   songId: string;
   instrument: InstrumentType;
-  arrangementName: string; // e.g., "Strumming Dasar (Pemula)", "Fingerstyle / Voicing Asli", "Bassline Root & Fifth"
+  arrangementName: string;
   difficulty: DifficultyLevel;
   capo?: number;
   tuning: string;
+  notesSummary?: string;
   sections: SongSection[];
 }
 
@@ -47,29 +74,14 @@ export interface Song {
 }
 
 export interface GuitarBassDiagram {
-  /**
-   * Array of fret numbers from lowest-pitched string to highest-pitched string.
-   * Gitar: 6 senar [E2, A2, D3, G3, B3, E4]
-   * Bass: 4 senar [E1, A1, D2, G2]
-   * -1 = muted (X), 0 = open string (O), >=1 = fret number
-   */
   frets: number[];
-  /**
-   * Finger numbers (0 = open/muted, 1 = telunjuk, 2 = tengah, 3 = manis, 4 = kelingking)
-   */
   fingers: number[];
   baseFret?: number;
   barres?: number[];
 }
 
 export interface PianoDiagram {
-  /**
-   * Notes in octave-agnostic or specific representation e.g. ["C4", "E4", "G4"]
-   */
   notes: string[];
-  /**
-   * Finger hints e.g. [1, 3, 5]
-   */
   fingers?: number[];
 }
 
@@ -91,3 +103,35 @@ export interface PracticeSession {
   bpmUsed: number;
   completedAt: string;
 }
+
+export type UserRole = "super_admin" | "contributor" | "user";
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  primaryInstrument: "guitar" | "bass" | "piano" | "cajon";
+  churchOrCommunity: string;
+  city: string;
+  bio: string;
+  joinedAt: string;
+  reputationPoints: number;
+}
+
+export interface ChordContributionSubmission {
+  id: string;
+  title: string;
+  artist: string;
+  category: "Hymn" | "Worship (Lambat)" | "Praise (Cepat)";
+  key: string;
+  bpm: number;
+  timeSignature: "4/4" | "3/4" | "6/8";
+  pemulaChordsSummary: string;
+  mahirBridgeChordsSummary: string;
+  submittedBy: string;
+  submittedAt: string;
+  status: "approved" | "pending" | "revision";
+  reviewNote?: string;
+}
+

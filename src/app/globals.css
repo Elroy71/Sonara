@@ -7,6 +7,6 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950;
+    @apply bg-[#f6f5f2] text-zinc-900 dark:bg-[#0d0d0f] dark:text-zinc-100 antialiased selection:bg-amber-500 selection:text-zinc-950;
   }
 }

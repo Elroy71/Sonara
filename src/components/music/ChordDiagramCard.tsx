@@ -35,22 +35,22 @@ export function ChordDiagramCard({
   return (
     <div
       onClick={() => onSelect?.(chordSymbol)}
-      className={`group relative rounded-xl border transition-all duration-200 ${
+      className={`group relative rounded-md border transition-colors ${
         onSelect ? "cursor-pointer" : ""
       } ${
         isSelected
-          ? "border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/10"
-          : "border-slate-800/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 hover:border-emerald-500/50"
+          ? "border-amber-500 bg-amber-500/5 dark:bg-amber-500/10"
+          : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#141417] hover:border-zinc-400 dark:hover:border-zinc-700"
       } ${compact ? "p-3" : "p-4"}`}
     >
       {/* Header: Chord Name + Play Preview */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2 border-b border-zinc-200 dark:border-zinc-800/80 pb-2">
         <div>
-          <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+          <span className="text-lg font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100">
             {diagram.chordName}
           </span>
           {!compact && (
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
               {diagram.intervals}
             </p>
           )}
@@ -58,10 +58,10 @@ export function ChordDiagramCard({
         <button
           type="button"
           onClick={handlePlay}
-          title={`Dengarkan bunyi chord ${diagram.chordName} (${instrument})`}
-          className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-500 hover:text-white transition-colors"
+          title={`Dengarkan bunyi chord ${diagram.chordName}`}
+          className="p-1.5 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 hover:bg-amber-500 hover:text-zinc-950 hover:border-amber-500 transition-colors"
         >
-          <Volume2 className="w-4 h-4" />
+          <Volume2 className="w-3.5 h-3.5" />
         </button>
       </div>
 
@@ -85,7 +85,7 @@ export function ChordDiagramCard({
             stringNames={BASS_STRING_NAMES}
           />
         )}
-        {instrument === "piano" && (
+        {(instrument === "piano" || instrument === "cajon") && (
           <PianoKeyboardSvg
             notes={diagram.piano.notes}
             fingers={diagram.piano.fingers}
@@ -94,17 +94,19 @@ export function ChordDiagramCard({
       </div>
 
       {/* Footer Note / Finger Hint */}
-      <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-        <span className="capitalize">
+      <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+        <span>
           {instrument === "guitar"
             ? "Gitar 6-Senar"
             : instrument === "bass"
             ? "Bass 4-Senar"
+            : instrument === "cajon"
+            ? "Perkusi / Harmoni"
             : "Piano / Keyboard"}
         </span>
         {instrument === "piano" ? (
-          <span className="font-mono text-emerald-600 dark:text-emerald-400">
-            {diagram.piano.notes.map((n) => n.replace(/\d/, "")).join(" · ")}
+          <span className="font-mono text-amber-600 dark:text-amber-400">
+            {diagram.piano.notes.map((n) => n.replace(/\d/, "")).join(" - ")}
           </span>
         ) : (
           <span className="font-mono">
@@ -139,7 +141,6 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
   const stringSpacing = gridWidth / (numStrings - 1);
   const fretSpacing = gridHeight / numFrets;
 
-  // Compute min positive fret to normalize display relative to baseFret
   const positiveFrets = frets.filter((f) => f > 0);
   const minFret = positiveFrets.length > 0 ? Math.min(...positiveFrets) : 1;
   const maxFret = positiveFrets.length > 0 ? Math.max(...positiveFrets) : 1;
@@ -147,7 +148,7 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="select-none">
-      {/* Nut (thick line if effectiveBase === 1) */}
+      {/* Nut */}
       <line
         x1={padLeft}
         y1={padTop}
@@ -155,16 +156,15 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
         y2={padTop}
         stroke="currentColor"
         strokeWidth={effectiveBase === 1 ? 4 : 1.5}
-        className="text-slate-700 dark:text-slate-200"
+        className="text-zinc-800 dark:text-zinc-200"
       />
 
-      {/* Base Fret Label when > 1 */}
       {effectiveBase > 1 && (
         <text
           x={padLeft - 8}
           y={padTop + fretSpacing * 0.65}
           textAnchor="end"
-          className="fill-emerald-500 text-[10px] font-bold font-mono"
+          className="fill-amber-500 text-[10px] font-bold font-mono"
         >
           {effectiveBase}fr
         </text>
@@ -182,7 +182,7 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
             y2={y}
             stroke="currentColor"
             strokeWidth={1}
-            className="text-slate-300 dark:text-slate-700"
+            className="text-zinc-300 dark:text-zinc-700"
           />
         );
       })}
@@ -190,7 +190,6 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
       {/* Vertical String Lines */}
       {stringNames.map((name, sIdx) => {
         const x = padLeft + sIdx * stringSpacing;
-        // Bass and lower strings are slightly thicker
         const strokeWidth = 1.8 - sIdx * 0.15;
         return (
           <g key={`str-${sIdx}`}>
@@ -201,14 +200,13 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
               y2={padTop + gridHeight}
               stroke="currentColor"
               strokeWidth={strokeWidth}
-              className="text-slate-400 dark:text-slate-500"
+              className="text-zinc-400 dark:text-zinc-500"
             />
-            {/* String Note Name at Bottom */}
             <text
               x={x}
               y={height - 5}
               textAnchor="middle"
-              className="fill-slate-400 dark:fill-slate-500 text-[9px] font-mono"
+              className="fill-zinc-500 text-[9px] font-mono"
             >
               {name}
             </text>
@@ -216,7 +214,7 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
         );
       })}
 
-      {/* Barre indicator if present */}
+      {/* Barre indicator */}
       {barres &&
         barres.map((barreFret) => {
           const relFret = barreFret - effectiveBase + 1;
@@ -238,28 +236,27 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
               y1={y}
               x2={x2}
               y2={y}
-              stroke="#10b981"
-              strokeWidth={11}
+              stroke="#d97706"
+              strokeWidth={10}
               strokeLinecap="round"
-              opacity={0.45}
+              opacity={0.5}
             />
           );
         })}
 
-      {/* Dots & Open/Muted Markers per string */}
+      {/* Dots & Open/Muted Markers */}
       {frets.map((fret, sIdx) => {
         const x = padLeft + sIdx * stringSpacing;
         const finger = fingers[sIdx] || 0;
 
         if (fret === -1) {
-          // Muted string (X)
           return (
             <text
               key={`marker-${sIdx}`}
               x={x}
               y={padTop - 8}
               textAnchor="middle"
-              className="fill-rose-500 text-[11px] font-bold"
+              className="fill-zinc-500 text-[11px] font-bold"
             >
               ×
             </text>
@@ -267,16 +264,15 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
         }
 
         if (fret === 0) {
-          // Open string (O)
           return (
             <circle
               key={`marker-${sIdx}`}
               cx={x}
               cy={padTop - 11}
-              r={4}
+              r={3.8}
               fill="none"
-              stroke="#10b981"
-              strokeWidth={1.8}
+              stroke="#d97706"
+              strokeWidth={1.6}
             />
           );
         }
@@ -287,13 +283,13 @@ function FretboardSvg({ frets, fingers, baseFret, barres, stringNames }: Fretboa
 
         return (
           <g key={`dot-${sIdx}`}>
-            <circle cx={x} cy={y} r={7.5} className="fill-emerald-500" />
+            <circle cx={x} cy={y} r={7} className="fill-amber-500" />
             {finger > 0 && (
               <text
                 x={x}
                 y={y + 3.2}
                 textAnchor="middle"
-                className="fill-slate-950 text-[9px] font-bold font-mono"
+                className="fill-zinc-950 text-[9px] font-bold font-mono"
               >
                 {finger}
               </text>
@@ -311,7 +307,6 @@ interface PianoKeyboardSvgProps {
 }
 
 function PianoKeyboardSvg({ notes }: PianoKeyboardSvgProps) {
-  // Render 14 white keys (2 octaves: C4 to B5)
   const whiteNotes = [
     { note: "C", oct: 4 },
     { note: "D", oct: 4 },
@@ -342,7 +337,6 @@ function PianoKeyboardSvg({ notes }: PianoKeyboardSvgProps) {
     { note: "A#", oct: 5, posAfterWhite: 12 },
   ];
 
-  // Normalize active notes to canonical sharp notation + octave
   const activeSet = new Set(
     notes.map((n) => {
       const m = n.match(/^([A-G][#b]?)(\d)$/);
@@ -361,7 +355,6 @@ function PianoKeyboardSvg({ notes }: PianoKeyboardSvgProps) {
 
   return (
     <svg width={totalW} height={totalH} viewBox={`0 0 ${totalW} ${totalH}`} className="select-none">
-      {/* White Keys */}
       {whiteNotes.map((wk, idx) => {
         const id = `${wk.note}${wk.oct}`;
         const isActive = activeSet.has(id);
@@ -373,22 +366,21 @@ function PianoKeyboardSvg({ notes }: PianoKeyboardSvgProps) {
               y={8}
               width={keyW - 1}
               height={keyH}
-              rx={2}
+              rx={1.5}
               className={
                 isActive
-                  ? "fill-emerald-400 stroke-emerald-600"
-                  : "fill-slate-100 dark:fill-slate-200 stroke-slate-400"
+                  ? "fill-amber-400 stroke-amber-600"
+                  : "fill-zinc-100 dark:fill-zinc-200 stroke-zinc-400"
               }
               strokeWidth={1}
             />
             {isActive && (
-              <circle cx={x + (keyW - 1) / 2} cy={8 + keyH - 12} r={3.5} className="fill-slate-950" />
+              <circle cx={x + (keyW - 1) / 2} cy={8 + keyH - 12} r={3} className="fill-zinc-950" />
             )}
           </g>
         );
       })}
 
-      {/* Black Keys */}
       {blackNotes.map((bk) => {
         const id = `${bk.note}${bk.oct}`;
         const isActive = activeSet.has(id);
@@ -400,16 +392,16 @@ function PianoKeyboardSvg({ notes }: PianoKeyboardSvgProps) {
               y={8}
               width={blackW}
               height={blackH}
-              rx={1.5}
+              rx={1}
               className={
                 isActive
-                  ? "fill-emerald-500 stroke-emerald-300"
-                  : "fill-slate-900 dark:fill-slate-950 stroke-slate-700"
+                  ? "fill-amber-500 stroke-amber-300"
+                  : "fill-zinc-900 dark:fill-zinc-950 stroke-zinc-700"
               }
               strokeWidth={1}
             />
             {isActive && (
-              <circle cx={x + blackW / 2} cy={8 + blackH - 9} r={2.5} className="fill-white" />
+              <circle cx={x + blackW / 2} cy={8 + blackH - 9} r={2.5} className="fill-zinc-950" />
             )}
           </g>
         );

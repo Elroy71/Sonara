@@ -274,14 +274,112 @@ export const CURATED_CHORD_DIAGRAMS: Record<string, InstrumentDiagramData> = {
   },
   "G/B": {
     chordName: "G/B",
-    intervals: "3 - 5 - 1 (B - D - G)",
+    intervals: "3 - 5 - 1 (Bass B -> D - G)",
     guitar: { frets: [-1, 2, 0, 0, 3, 3], fingers: [0, 1, 0, 0, 3, 4], baseFret: 1 },
     bass: { frets: [-1, 2, 0, 0], fingers: [0, 2, 0, 0], baseFret: 1 },
     piano: { notes: ["B4", "D5", "G5"], fingers: [1, 2, 5] },
   },
+  "C/E": {
+    chordName: "C/E",
+    intervals: "3 - 5 - 1 (Bass E -> G - C)",
+    guitar: { frets: [0, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0], baseFret: 1 },
+    bass: { frets: [0, 3, 2, 0], fingers: [0, 3, 2, 0], baseFret: 1 },
+    piano: { notes: ["E4", "G4", "C5"], fingers: [1, 2, 5] },
+  },
+  "C/G": {
+    chordName: "C/G",
+    intervals: "5 - 1 - 3 (Bass G -> C - E)",
+    guitar: { frets: [3, 3, 2, 0, 1, 0], fingers: [3, 4, 2, 0, 1, 0], baseFret: 1 },
+    bass: { frets: [3, 3, 2, 0], fingers: [3, 4, 2, 0], baseFret: 1 },
+    piano: { notes: ["G4", "C5", "E5"], fingers: [1, 3, 5] },
+  },
+  "Am/G": {
+    chordName: "Am/G",
+    intervals: "b7 - 1 - b3 - 5 (Bass G -> A - C - E)",
+    guitar: { frets: [3, 0, 2, 2, 1, 0], fingers: [3, 0, 2, 4, 1, 0], baseFret: 1 },
+    bass: { frets: [3, 0, 2, 2], fingers: [3, 0, 1, 2], baseFret: 1 },
+    piano: { notes: ["G4", "A4", "C5", "E5"], fingers: [1, 2, 3, 5] },
+  },
+  "F/A": {
+    chordName: "F/A",
+    intervals: "3 - 5 - 1 (Bass A -> C - F)",
+    guitar: { frets: [-1, 0, 3, 2, 1, 1], fingers: [0, 0, 3, 2, 1, 1], baseFret: 1 },
+    bass: { frets: [-1, 0, 3, 2], fingers: [0, 0, 3, 2], baseFret: 1 },
+    piano: { notes: ["A4", "C5", "F5"], fingers: [1, 2, 5] },
+  },
+  "E7/G#": {
+    chordName: "E7/G#",
+    intervals: "3 - b7 - 1 - 5 (Bass G# -> D - E - B)",
+    guitar: { frets: [4, 2, 0, 1, 0, 0], fingers: [4, 2, 0, 1, 0, 0], baseFret: 1 },
+    bass: { frets: [4, 2, 2, 1], fingers: [4, 2, 3, 1], baseFret: 1 },
+    piano: { notes: ["G#4", "B4", "D5", "E5"], fingers: [1, 2, 4, 5] },
+  },
+  Gsus4: {
+    chordName: "Gsus4",
+    intervals: "1 - 4 - 5 (G - C - D)",
+    guitar: { frets: [3, 3, 0, 0, 1, 3], fingers: [2, 3, 0, 0, 1, 4], baseFret: 1 },
+    bass: { frets: [3, 3, 0, 0], fingers: [2, 3, 0, 0], baseFret: 1 },
+    piano: { notes: ["G4", "C5", "D5"], fingers: [1, 4, 5] },
+  },
+  Asus4: {
+    chordName: "Asus4",
+    intervals: "1 - 4 - 5 (A - D - E)",
+    guitar: { frets: [-1, 0, 2, 2, 3, 0], fingers: [0, 0, 1, 2, 3, 0], baseFret: 1 },
+    bass: { frets: [-1, 0, 2, 2], fingers: [0, 0, 1, 2], baseFret: 1 },
+    piano: { notes: ["A4", "D5", "E5"], fingers: [1, 4, 5] },
+  },
+  Esus4: {
+    chordName: "Esus4",
+    intervals: "1 - 4 - 5 (E - A - B)",
+    guitar: { frets: [0, 2, 2, 2, 0, 0], fingers: [0, 2, 3, 4, 0, 0], baseFret: 1 },
+    bass: { frets: [0, 2, 2, 2], fingers: [0, 2, 3, 4], baseFret: 1 },
+    piano: { notes: ["E4", "A4", "B4"], fingers: [1, 4, 5] },
+  },
+  "A/C#": {
+    chordName: "A/C#",
+    intervals: "3 - 5 - 1 (Bass C# -> E - A)",
+    guitar: { frets: [-1, 4, 2, 2, 2, 0], fingers: [0, 4, 1, 2, 3, 0], baseFret: 1 },
+    bass: { frets: [-1, 4, 2, 2], fingers: [0, 4, 1, 2], baseFret: 1 },
+    piano: { notes: ["C#4", "E4", "A4"], fingers: [1, 2, 5] },
+  },
+  "E/G#": {
+    chordName: "E/G#",
+    intervals: "3 - 5 - 1 (Bass G# -> B - E)",
+    guitar: { frets: [4, 2, 2, 1, 0, 0], fingers: [4, 2, 3, 1, 0, 0], baseFret: 1 },
+    bass: { frets: [4, 2, 2, 1], fingers: [4, 2, 3, 1], baseFret: 1 },
+    piano: { notes: ["G#4", "B4", "E5"], fingers: [1, 2, 5] },
+  },
+  "G/D": {
+    chordName: "G/D",
+    intervals: "5 - 1 - 3 (Bass D -> G - B)",
+    guitar: { frets: [-1, -1, 0, 0, 0, 3], fingers: [0, 0, 0, 0, 0, 3], baseFret: 1 },
+    bass: { frets: [-1, 5, 5, 4], fingers: [0, 2, 3, 1], baseFret: 4 },
+    piano: { notes: ["D4", "G4", "B4"], fingers: [1, 3, 5] },
+  },
+  "D/A": {
+    chordName: "D/A",
+    intervals: "5 - 1 - 3 (Bass A -> D - F#)",
+    guitar: { frets: [-1, 0, 0, 2, 3, 2], fingers: [0, 0, 0, 1, 3, 2], baseFret: 1 },
+    bass: { frets: [-1, 0, 0, 2], fingers: [0, 0, 0, 2], baseFret: 1 },
+    piano: { notes: ["A4", "D5", "F#5"], fingers: [1, 3, 5] },
+  },
+  "F/C": {
+    chordName: "F/C",
+    intervals: "5 - 1 - 3 (Bass C -> F - A)",
+    guitar: { frets: [-1, 3, 3, 2, 1, 1], fingers: [0, 3, 4, 2, 1, 1], baseFret: 1 },
+    bass: { frets: [-1, 3, 3, 2], fingers: [0, 3, 4, 2], baseFret: 1 },
+    piano: { notes: ["C4", "F4", "A4"], fingers: [1, 3, 5] },
+  },
+  "Bb/D": {
+    chordName: "Bb/D",
+    intervals: "3 - 5 - 1 (Bass D -> F - Bb)",
+    guitar: { frets: [-1, 5, 3, 3, 3, -1], fingers: [0, 3, 1, 1, 1, 0], baseFret: 3 },
+    bass: { frets: [-1, 5, 3, 3], fingers: [0, 3, 1, 1], baseFret: 3 },
+    piano: { notes: ["D4", "F4", "A#4"], fingers: [1, 2, 5] },
+  },
   "D/F#": {
     chordName: "D/F#",
-    intervals: "3 - 5 - 1 (F# - A - D)",
+    intervals: "3 - 5 - 1 (Bass F# -> A - D)",
     guitar: { frets: [2, 0, 0, 2, 3, 2], fingers: [1, 0, 0, 2, 4, 3], baseFret: 1 },
     bass: { frets: [2, 0, 0, 2], fingers: [1, 0, 0, 2], baseFret: 1 },
     piano: { notes: ["F#4", "A4", "D5"], fingers: [1, 2, 5] },
@@ -300,82 +398,253 @@ export const CURATED_CHORD_DIAGRAMS: Record<string, InstrumentDiagramData> = {
     bass: { frets: [-1, 5, 5, 2], fingers: [0, 3, 4, 1], baseFret: 2 },
     piano: { notes: ["D4", "G4", "A4"], fingers: [1, 4, 5] },
   },
+  // Voicing "anchor" worship modern (Jari 3 & 4 mengunci Fret 3 senar 1 & 2) untuk kursus Gitar Pertemuan 6
+  "G (anchor)": {
+    chordName: "G (anchor)",
+    intervals: "1 - 3 - 5 (G - B - D) · Jari 3 & 4 di Fret 3",
+    guitar: { frets: [3, 2, 0, 0, 3, 3], fingers: [2, 1, 0, 0, 3, 4], baseFret: 1 },
+    bass: { frets: [3, 2, 0, 0], fingers: [2, 1, 0, 0], baseFret: 1 },
+    piano: { notes: ["G4", "B4", "D5"], fingers: [1, 3, 5] },
+  },
+  "Em7 (anchor)": {
+    chordName: "Em7 (anchor)",
+    intervals: "1 - b3 - 5 - b7 (E - G - B - D) · Jari 3 & 4 di Fret 3",
+    guitar: { frets: [0, 2, 2, 0, 3, 3], fingers: [0, 1, 2, 0, 3, 4], baseFret: 1 },
+    bass: { frets: [0, 2, 0, 0], fingers: [0, 2, 0, 0], baseFret: 1 },
+    piano: { notes: ["E4", "G4", "B4", "D5"], fingers: [1, 2, 3, 5] },
+  },
 };
 
+
+// ============================================================================
+// GENERATOR CHORD UNIVERSAL (untuk chord hasil transpose yang tidak ada di kamus)
+// Gitar: bentuk barre E-shape / A-shape, Bass: root-5th-oktaf, Piano: teori interval.
+// ============================================================================
+const QUALITY_INTERVALS: Record<string, number[]> = {
+  "": [0, 4, 7],
+  m: [0, 3, 7],
+  "7": [0, 4, 7, 10],
+  m7: [0, 3, 7, 10],
+  maj7: [0, 4, 7, 11],
+  sus4: [0, 5, 7],
+  sus2: [0, 2, 7],
+  add9: [0, 4, 7, 14],
+  "7sus4": [0, 5, 7, 10],
+  dim: [0, 3, 6],
+};
+
+const QUALITY_LABEL: Record<string, string> = {
+  "": "1 - 3 - 5",
+  m: "1 - b3 - 5",
+  "7": "1 - 3 - 5 - b7",
+  m7: "1 - b3 - 5 - b7",
+  maj7: "1 - 3 - 5 - 7",
+  sus4: "1 - 4 - 5",
+  sus2: "1 - 2 - 5",
+  add9: "1 - 3 - 5 - 9",
+  "7sus4": "1 - 4 - 5 - b7",
+  dim: "1 - b3 - b5",
+};
+
+// Offset fret relatif terhadap fret barre (-1 = senar tidak dimainkan). Urutan senar 6 -> 1.
+const E_SHAPES: Record<string, number[]> = {
+  "": [0, 2, 2, 1, 0, 0],
+  m: [0, 2, 2, 0, 0, 0],
+  "7": [0, 2, 0, 1, 0, 0],
+  m7: [0, 2, 0, 0, 0, 0],
+  maj7: [0, 2, 1, 1, 0, 0],
+  sus4: [0, 2, 2, 2, 0, 0],
+  "7sus4": [0, 2, 0, 2, 0, 0],
+};
+const A_SHAPES: Record<string, number[]> = {
+  "": [-1, 0, 2, 2, 2, 0],
+  m: [-1, 0, 2, 2, 1, 0],
+  "7": [-1, 0, 2, 0, 2, 0],
+  m7: [-1, 0, 2, 0, 1, 0],
+  maj7: [-1, 0, 2, 1, 2, 0],
+  sus4: [-1, 0, 2, 2, 3, 0],
+  sus2: [-1, 0, 2, 2, 0, 0],
+  add9: [-1, 0, 2, 4, 2, 0],
+  "7sus4": [-1, 0, 2, 0, 3, 0],
+  dim: [-1, 0, 1, 2, 1, -1],
+};
+
+export interface ParsedChord {
+  rootIdx: number;
+  bassIdx: number | null;
+  quality: string;
+  intervals: number[];
+}
+
+/** Menguraikan simbol chord (mis. "F#m7", "D/F#", "Cadd9") menjadi akar, kualitas, dan nada bass. */
+export function parseChordSymbol(chordSymbol: string): ParsedChord {
+  const [main, bassPart] = chordSymbol.split("/");
+  const match = main.match(/^([A-G][#b]?)(.*)$/);
+  const rootIdx = Math.max(0, getNoteIndex(match ? match[1] : "C"));
+  let quality = match ? match[2] : "";
+  if (quality === "M7") quality = "maj7";
+  if (!(quality in QUALITY_INTERVALS)) {
+    if (quality.includes("maj7")) quality = "maj7";
+    else if (quality.startsWith("m") && quality.includes("7")) quality = "m7";
+    else if (quality.startsWith("m")) quality = "m";
+    else if (quality.includes("sus4")) quality = quality.includes("7") ? "7sus4" : "sus4";
+    else if (quality.includes("sus2")) quality = "sus2";
+    else if (quality.includes("7")) quality = "7";
+    else quality = "";
+  }
+  const bassIdx = bassPart ? getNoteIndex(bassPart) : -1;
+  return {
+    rootIdx,
+    bassIdx: bassIdx >= 0 ? bassIdx : null,
+    quality,
+    intervals: QUALITY_INTERVALS[quality],
+  };
+}
+
+function noteNameFromC4(semitone: number): string {
+  const octave = 4 + Math.floor(semitone / 12);
+  return `${CHROMATIC_SHARP[((semitone % 12) + 12) % 12]}${octave}`;
+}
+
+function guessFingers(frets: number[], barreFret: number): number[] {
+  const seen: Record<number, number> = {};
+  return frets.map((fr) => {
+    if (fr < 0) return 0;
+    if (fr === 0) return 0;
+    const offset = fr - barreFret;
+    if (barreFret > 0 && offset === 0) return 1;
+    const base = offset <= 0 ? 1 : Math.min(4, offset + 1);
+    seen[offset] = (seen[offset] || 0) + 1;
+    return Math.min(4, base + (offset >= 2 ? seen[offset] - 1 : 0) + (offset === 1 ? 0 : 0));
+  });
+}
+
+function makeGuitarShape(rootIdx: number, quality: string) {
+  const fe = (rootIdx - 4 + 12) % 12; // fret akar di senar 6
+  const fa = (rootIdx - 9 + 12) % 12; // fret akar di senar 5
+  const eShape = E_SHAPES[quality];
+  const aShape = A_SHAPES[quality];
+  let useE = Boolean(eShape);
+  if (eShape && aShape) useE = fe <= fa;
+  else if (!eShape) useE = false;
+  const shape = useE ? eShape : aShape || E_SHAPES[""];
+  const f = useE ? fe : fa;
+  const frets = shape.map((o) => (o < 0 ? -1 : o + f));
+  const positive = frets.filter((x) => x > 0);
+  const baseFret = f > 0 ? f : positive.length ? Math.min(...positive) : 1;
+  return {
+    frets,
+    fingers: guessFingers(frets, f),
+    baseFret,
+    ...(f > 0 && shape.filter((o) => o === 0).length >= 2 ? { barres: [f] } : {}),
+  };
+}
+
+function makeBassShape(noteIdx: number, withFifth = true) {
+  const fe = (noteIdx - 4 + 12) % 12;
+  if (fe <= 7) {
+    return {
+      frets: [fe, withFifth ? fe + 2 : -1, fe + 2, -1],
+      fingers: [fe === 0 ? 0 : 1, withFifth ? 3 : 0, 4, 0],
+      baseFret: fe > 0 ? fe : 1,
+    };
+  }
+  const fa = (noteIdx - 9 + 12) % 12;
+  return {
+    frets: [-1, fa, withFifth ? fa + 2 : -1, fa + 2],
+    fingers: [0, fa === 0 ? 0 : 1, withFifth ? 3 : 0, 4],
+    baseFret: fa > 0 ? fa : 1,
+  };
+}
+
+function makePianoNotes(parsed: ParsedChord): string[] {
+  const tones = parsed.intervals.map((i) => parsed.rootIdx + i);
+  if (parsed.bassIdx === null) return tones.map(noteNameFromC4);
+  const out = [parsed.bassIdx];
+  let prev = parsed.bassIdx;
+  for (const tone of tones) {
+    if (((tone % 12) + 12) % 12 === parsed.bassIdx) continue;
+    let t = tone;
+    while (t <= prev) t += 12;
+    out.push(t);
+    prev = t;
+  }
+  return out.map(noteNameFromC4);
+}
+
+/** Pasang nada bass slash pada senar rendah gitar (E/A/D) dan matikan senar di bawahnya. */
+function applySlashToGuitar(
+  guitar: { frets: number[]; fingers: number[]; baseFret?: number; barres?: number[] },
+  bassIdx: number
+) {
+  const open = [4, 9, 2];
+  const base = guitar.baseFret || 1;
+  let best = { s: 0, fr: ((bassIdx - open[0]) % 12 + 12) % 12 };
+  for (let s = 1; s < 3; s++) {
+    const fr = ((bassIdx - open[s]) % 12 + 12) % 12;
+    if (Math.abs(fr - base) < Math.abs(best.fr - base)) best = { s, fr };
+  }
+  const frets = [...guitar.frets];
+  const fingers = [...guitar.fingers];
+  for (let j = 0; j < best.s; j++) {
+    frets[j] = -1;
+    fingers[j] = 0;
+  }
+  frets[best.s] = best.fr;
+  fingers[best.s] = best.fr === 0 ? 0 : 4;
+  const positive = frets.filter((x) => x > 0);
+  return {
+    ...guitar,
+    frets,
+    fingers,
+    baseFret: positive.length ? Math.min(...positive) : 1,
+  };
+}
+
 /**
- * Deterministic lookup + algorithmic generator if a chord was transposed into a variant
- * not explicitly listed in CURATED_CHORD_DIAGRAMS (e.g., F#m7, Bbmaj7, Eb7, etc.).
+ * Pencarian bentuk chord: kamus kurasi -> normalisasi akar -> generator teori
+ * (slash chord otomatis memakai nada bass yang benar di gitar, bass, dan piano).
  */
 export function getChordDiagram(chordSymbol: string): InstrumentDiagramData {
   if (!chordSymbol) {
     return CURATED_CHORD_DIAGRAMS["C"];
   }
 
-  // 1. Direct match
   if (CURATED_CHORD_DIAGRAMS[chordSymbol]) {
     return { ...CURATED_CHORD_DIAGRAMS[chordSymbol], chordName: chordSymbol };
   }
 
-  // 2. Normalized root match (e.g. Bb -> A#, Eb -> D#)
   const normalized = normalizeChordForLookup(chordSymbol);
   if (CURATED_CHORD_DIAGRAMS[normalized]) {
     return { ...CURATED_CHORD_DIAGRAMS[normalized], chordName: chordSymbol };
   }
 
-  // 3. Strip slash bass if slash chord isn't explicitly curated
-  if (chordSymbol.includes("/")) {
-    const [mainChord] = chordSymbol.split("/");
-    const mainNorm = normalizeChordForLookup(mainChord);
-    if (CURATED_CHORD_DIAGRAMS[mainNorm]) {
-      return {
-        ...CURATED_CHORD_DIAGRAMS[mainNorm],
-        chordName: chordSymbol,
-      };
-    }
+  const parsed = parseChordSymbol(chordSymbol);
+
+  if (chordSymbol.includes("/") && parsed.bassIdx !== null) {
+    const mainDiagram = getChordDiagram(chordSymbol.split("/")[0]);
+    const pianoNotes = makePianoNotes(parsed);
+    return {
+      chordName: chordSymbol,
+      intervals: `Bass ${CHROMATIC_SHARP[parsed.bassIdx]} di bawah akord ${chordSymbol.split("/")[0]}`,
+      guitar: applySlashToGuitar(mainDiagram.guitar, parsed.bassIdx),
+      bass: makeBassShape(parsed.bassIdx, false),
+      piano: {
+        notes: pianoNotes,
+        fingers: pianoNotes.length >= 4 ? [1, 2, 3, 5] : [1, 2, 5],
+      },
+    };
   }
 
-  // 4. Algorithmic generator based on root & quality (m, 7, m7, maj7, sus4)
-  const match = chordSymbol.match(/^([A-G][#b]?)(.*)$/);
-  const rootStr = match ? match[1] : "C";
-  const suffix = match ? match[2] : "";
-  const rootIdx = Math.max(0, getNoteIndex(rootStr));
-
-  const isMinor = suffix.startsWith("m") && !suffix.startsWith("maj");
-  const isSeventh = suffix.includes("7");
-  const isMaj7 = suffix.includes("maj7") || suffix.includes("M7");
-
-  // Compute Piano notes in C4..B5
-  const thirdOffset = isMinor ? 3 : 4;
-  const fifthOffset = 7;
-  const seventhOffset = isMaj7 ? 11 : 10;
-
-  const noteNameAt = (semitoneFromC4: number) => {
-    const octave = 4 + Math.floor(semitoneFromC4 / 12);
-    const note = CHROMATIC_SHARP[((semitoneFromC4 % 12) + 12) % 12];
-    return `${note}${octave}`;
-  };
-
-  const pianoNotes = [
-    noteNameAt(rootIdx),
-    noteNameAt(rootIdx + thirdOffset),
-    noteNameAt(rootIdx + fifthOffset),
-  ];
-  if (isSeventh) {
-    pianoNotes.push(noteNameAt(rootIdx + seventhOffset));
-  }
-
-  // Use base Major or Minor shape from curated dictionary for Guitar & Bass
-  const baseKey = `${CHROMATIC_SHARP[rootIdx]}${isMinor ? "m" : ""}`;
-  const baseDiagram = CURATED_CHORD_DIAGRAMS[baseKey] || CURATED_CHORD_DIAGRAMS["C"];
-
+  const pianoNotes = makePianoNotes(parsed);
   return {
     chordName: chordSymbol,
-    intervals: isMinor ? "1 - b3 - 5" : "1 - 3 - 5",
-    guitar: baseDiagram.guitar,
-    bass: baseDiagram.bass,
+    intervals: QUALITY_LABEL[parsed.quality] || "1 - 3 - 5",
+    guitar: makeGuitarShape(parsed.rootIdx, parsed.quality),
+    bass: makeBassShape(parsed.rootIdx),
     piano: {
       notes: pianoNotes,
-      fingers: isSeventh ? [1, 2, 3, 5] : [1, 3, 5],
+      fingers: pianoNotes.length >= 4 ? [1, 2, 3, 5] : [1, 3, 5],
     },
   };
 }

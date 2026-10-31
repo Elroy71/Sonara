@@ -1,45 +1,67 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Mic, MicOff, Volume2, AlertTriangle, CheckCircle2, Radio } from "lucide-react";
+import { Mic, MicOff, Volume2, CheckCircle2 } from "lucide-react";
 import { PitchDetector } from "pitchy";
-import { getAudioContext } from "@/lib/audioSynth";
+import { getAudioContext, playTunerTone } from "@/lib/audioSynth";
 import { CHROMATIC_SHARP } from "@/lib/transpose";
 
 interface TargetString {
   label: string;
+  desc: string;
   note: string;
   octave: number;
   freq: number;
 }
 
 const GUITAR_STRINGS: TargetString[] = [
-  { label: "Senar 6", note: "E", octave: 2, freq: 82.41 },
-  { label: "Senar 5", note: "A", octave: 2, freq: 110.0 },
-  { label: "Senar 4", note: "D", octave: 3, freq: 146.83 },
-  { label: "Senar 3", note: "G", octave: 3, freq: 196.0 },
-  { label: "Senar 2", note: "B", octave: 3, freq: 246.94 },
-  { label: "Senar 1", note: "E", octave: 4, freq: 329.63 },
+  { label: "Senar 6", desc: "Paling Tebal (Atas)", note: "E", octave: 2, freq: 82.41 },
+  { label: "Senar 5", desc: "Senar A", note: "A", octave: 2, freq: 110.0 },
+  { label: "Senar 4", desc: "Senar D", note: "D", octave: 3, freq: 146.83 },
+  { label: "Senar 3", desc: "Senar G", note: "G", octave: 3, freq: 196.0 },
+  { label: "Senar 2", desc: "Senar B", note: "B", octave: 3, freq: 246.94 },
+  { label: "Senar 1", desc: "Paling Tipis (Bawah)", note: "E", octave: 4, freq: 329.63 },
 ];
 
 const BASS_STRINGS: TargetString[] = [
-  { label: "Senar 4", note: "E", octave: 1, freq: 41.2 },
-  { label: "Senar 3", note: "A", octave: 1, freq: 55.0 },
-  { label: "Senar 2", note: "D", octave: 2, freq: 73.42 },
-  { label: "Senar 1", note: "G", octave: 2, freq: 98.0 },
+  { label: "Senar 4", desc: "Paling Tebal (Atas)", note: "E", octave: 1, freq: 41.2 },
+  { label: "Senar 3", desc: "Senar A", note: "A", octave: 1, freq: 55.0 },
+  { label: "Senar 2", desc: "Senar D", note: "D", octave: 2, freq: 73.42 },
+  { label: "Senar 1", desc: "Paling Tipis (Bawah)", note: "G", octave: 2, freq: 98.0 },
 ];
 
-function frequencyToNoteData(freq: number) {
+const PIANO_REF_NOTES: TargetString[] = [
+  { label: "Nada C", desc: "Middle C", note: "C", octave: 4, freq: 261.63 },
+  { label: "Nada D", desc: "Oktaf 4", note: "D", octave: 4, freq: 293.66 },
+  { label: "Nada E", desc: "Oktaf 4", note: "E", octave: 4, freq: 329.63 },
+  { label: "Nada F", desc: "Oktaf 4", note: "F", octave: 4, freq: 349.23 },
+  { label: "Nada G", desc: "Oktaf 4", note: "G", octave: 4, freq: 392.0 },
+  { label: "Nada A", desc: "Konser 440Hz", note: "A", octave: 4, freq: 440.0 },
+];
+
+function frequencyToNoteData(freq: number, lockedTarget?: TargetString | null) {
+  if (lockedTarget) {
+    const cents = Math.round(1200 * Math.log2(freq / lockedTarget.freq));
+    return {
+      noteName: lockedTarget.note,
+      octave: lockedTarget.octave,
+      cents,
+      frequency: freq,
+      targetLabel: `${lockedTarget.label} (${lockedTarget.note}${lockedTarget.octave})`,
+    };
+  }
+
   const midiFloat = 12 * Math.log2(freq / 440) + 69;
   const nearestMidi = Math.round(midiFloat);
   const cents = Math.round((midiFloat - nearestMidi) * 100);
   const noteName = CHROMATIC_SHARP[((nearestMidi % 12) + 12) % 12];
   const octave = Math.floor(nearestMidi / 12) - 1;
-  return { noteName, octave, cents, frequency: freq };
+  return { noteName, octave, cents, frequency: freq, targetLabel: null };
 }
 
 export function TunerTool() {
-  const [mode, setMode] = useState<"guitar" | "bass" | "chromatic">("guitar");
+  const [mode, setMode] = useState<"guitar" | "bass" | "piano">("guitar");
+  const [lockedStringIdx, setLockedStringIdx] = useState<number | null>(null);
   const [micState, setMicState] = useState<"idle" | "listening" | "denied" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [detected, setDetected] = useState<{
@@ -48,11 +70,27 @@ export function TunerTool() {
     cents: number;
     frequency: number;
     clarity: number;
+    targetLabel?: string | null;
   } | null>(null);
 
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+
+  const targetStrings =
+    mode === "bass"
+      ? BASS_STRINGS
+      : mode === "piano"
+      ? PIANO_REF_NOTES
+      : GUITAR_STRINGS;
+
+  const lockedTarget =
+    lockedStringIdx !== null ? targetStrings[lockedStringIdx] ?? null : null;
+  const lockedTargetRef = useRef<TargetString | null>(lockedTarget);
+
+  useEffect(() => {
+    lockedTargetRef.current = lockedTarget;
+  }, [lockedTarget]);
 
   const stopMicrophone = useCallback(() => {
     if (rafRef.current) {
@@ -77,7 +115,7 @@ export function TunerTool() {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setMicState("error");
       setErrorMessage(
-        "Browser Anda tidak mendukung akses mikrofon Web Audio API. Gunakan tombol Nada Referensi di bawah untuk menyetem secara manual."
+        "Browser tidak mendukung akses mikrofon. Gunakan tombol nada referensi di bawah untuk menyetem dengan telinga."
       );
       return;
     }
@@ -111,8 +149,8 @@ export function TunerTool() {
         analyserRef.current.getFloatTimeDomainData(inputBuffer);
         const [pitch, clarity] = detector.findPitch(inputBuffer, ctx.sampleRate);
 
-        if (clarity > 0.85 && pitch >= 32 && pitch <= 1200) {
-          const data = frequencyToNoteData(pitch);
+        if (clarity > 0.84 && pitch >= 32 && pitch <= 1200) {
+          const data = frequencyToNoteData(pitch, lockedTargetRef.current);
           setDetected({
             ...data,
             clarity: Math.round(clarity * 100),
@@ -127,85 +165,69 @@ export function TunerTool() {
       if (domErr?.name === "NotAllowedError" || domErr?.name === "PermissionDeniedError") {
         setMicState("denied");
         setErrorMessage(
-          "Akses mikrofon ditolak. Silakan izinkan akses mikrofon pada ikon gembok di bilah alamat browser Anda, atau gunakan tombol Simulasi & Nada Referensi di bawah."
+          "Akses mikrofon ditolak. Izinkan mikrofon di browser Anda, atau klik tombol senar di bawah untuk menyetem manual."
         );
       } else {
         setMicState("error");
         setErrorMessage(
-          "Tidak ditemukan perangkat mikrofon aktif atau perangkat sedang digunakan aplikasi lain. Anda tetap dapat menggunakan Nada Referensi di bawah."
+          "Mikrofon tidak terdeteksi. Anda tetap dapat mengklik tombol senar di bawah untuk mendengar bunyi nada standar."
         );
       }
     }
   };
 
-  const playReferenceString = (target: TargetString, simulateOffsetCents = 0) => {
+  const playReferenceString = (target: TargetString, idx: number, simulateOffsetCents = 0) => {
     const ctx = getAudioContext();
     if (!ctx) return;
 
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
     const actualFreq = target.freq * Math.pow(2, simulateOffsetCents / 1200);
-    osc.type = mode === "bass" ? "sawtooth" : "triangle";
-    osc.frequency.setValueAtTime(actualFreq, now);
+    playTunerTone(actualFreq, mode, 2.4);
 
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.25, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(mode === "bass" ? 500 : 1800, now);
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 1.85);
-
-    // Also update visual gauge so user can see how the tuner responds
-    const data = frequencyToNoteData(actualFreq);
+    const data = frequencyToNoteData(actualFreq, target);
     setDetected({
       ...data,
-      clarity: 98,
+      clarity: 99,
     });
+    if (simulateOffsetCents === 0) {
+      setLockedStringIdx(idx);
+    }
   };
 
-  const targetStrings = mode === "bass" ? BASS_STRINGS : GUITAR_STRINGS;
   const isInTune = detected ? Math.abs(detected.cents) <= 5 : false;
   const clampedCents = detected ? Math.max(-50, Math.min(50, detected.cents)) : 0;
 
   return (
-    <div className="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 shadow-sm space-y-6">
-      {/* Header & Mode Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="p-5 sm:p-6 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#141417] space-y-5">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-4">
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-500">
-            Web Audio API + Pitchy Real-Time
+          <span className="text-[11px] font-mono uppercase tracking-wider text-amber-600 dark:text-amber-500">
+            2 · Penyetem Senar & Nada Standar
           </span>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Tuner Instrumen Presisi
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            Tuner Instrumen
           </h2>
         </div>
 
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center border border-zinc-300 dark:border-zinc-800 rounded-md overflow-hidden bg-[#f6f5f2] dark:bg-[#0d0d0f]">
           {(
             [
-              { id: "guitar", label: "🎸 Gitar (6)" },
-              { id: "bass", label: "🎸 Bass (4)" },
-              { id: "chromatic", label: "🎵 Kromatik" },
+              { id: "guitar", label: "Gitar (6 Senar)" },
+              { id: "bass", label: "Bass (4 Senar)" },
+              { id: "piano", label: "Nada Piano" },
             ] as const
           ).map((m) => (
             <button
               key={m.id}
               type="button"
-              onClick={() => setMode(m.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              onClick={() => {
+                setMode(m.id);
+                setLockedStringIdx(null);
+              }}
+              className={`px-2.5 py-1 text-xs font-medium border-r last:border-r-0 border-zinc-300 dark:border-zinc-800 transition-colors ${
                 mode === m.id
-                  ? "bg-emerald-500 text-slate-950"
-                  : "text-slate-600 dark:text-slate-400"
+                  ? "bg-amber-500 text-zinc-950 font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400"
               }`}
             >
               {m.label}
@@ -214,88 +236,79 @@ export function TunerTool() {
         </div>
       </div>
 
-      {/* Microphone Permission & Error Alert */}
+      {/* Microphone Status Notice */}
       {(micState === "denied" || micState === "error") && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="font-bold">Status Input Mikrofon</p>
-            <p className="leading-relaxed">{errorMessage}</p>
-          </div>
+        <div className="p-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+          <p className="font-semibold">Info Mikrofon</p>
+          <p>{errorMessage}</p>
         </div>
       )}
 
-      {/* Visual Pitch & Cents Meter */}
-      <div className="p-6 rounded-2xl bg-slate-100/80 dark:bg-slate-950/90 border border-slate-200/80 dark:border-slate-800 text-center space-y-5">
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span className="inline-flex items-center gap-1.5">
-            <Radio
-              className={`w-3.5 h-3.5 ${
-                micState === "listening"
-                  ? "text-emerald-500 animate-pulse"
-                  : "text-slate-400"
-              }`}
-            />
+      {/* Pitch Display & Clear Tuning Guidance */}
+      <div className="p-4 sm:p-5 rounded-md bg-[#f6f5f2] dark:bg-[#0d0d0f] border border-zinc-200 dark:border-zinc-800 text-center space-y-3.5">
+        <div className="flex items-center justify-between text-xs font-mono text-zinc-500">
+          <span>
             {micState === "listening"
-              ? "Mikrofon Aktif Mendengarkan..."
-              : "Siap Menerima Sinyal"}
+              ? "● Mikrofon Mendengarkan..."
+              : lockedTarget
+              ? `Target: ${lockedTarget.label} (${lockedTarget.note}${lockedTarget.octave})`
+              : "Mode: Deteksi Otomatis"}
           </span>
-          <span className="font-mono">
+          <span>
             {detected ? `${detected.frequency.toFixed(1)} Hz` : "---.- Hz"}
           </span>
         </div>
 
-        {/* Detected Note Display */}
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div
-            className={`text-6xl font-extrabold font-mono tracking-tight transition-colors ${
+            className={`text-5xl font-bold font-mono tracking-tight transition-colors ${
               !detected
-                ? "text-slate-400 dark:text-slate-600"
+                ? "text-zinc-400 dark:text-zinc-600"
                 : isInTune
-                ? "text-emerald-500"
-                : "text-amber-500"
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-amber-600 dark:text-amber-400"
             }`}
           >
             {detected ? `${detected.noteName}${detected.octave}` : "--"}
           </div>
-          <div className="text-xs font-bold">
+
+          {/* Human-friendly tuning instruction */}
+          <div className="text-xs font-medium">
             {!detected ? (
-              <span className="text-slate-400">
-                Petik senar atau klik tombol Nada Referensi di bawah
+              <span className="text-zinc-500">
+                Aktifkan mikrofon lalu petik senar, atau klik tombol senar di bawah untuk mendengar nada standar
               </span>
             ) : isInTune ? (
-              <span className="inline-flex items-center gap-1 text-emerald-500">
-                <CheckCircle2 className="w-4 h-4" />
-                Nada Tepat! ({detected.cents > 0 ? `+${detected.cents}` : detected.cents} cents)
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Nada Sudah Pas! ({detected.cents > 0 ? `+${detected.cents}` : detected.cents} cents)
               </span>
             ) : detected.cents < 0 ? (
-              <span className="text-amber-500">
-                Terlalu Rendah / Flat ({detected.cents} cents) — Kencangkan sedikit
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-amber-500/15 text-amber-700 dark:text-amber-300 font-semibold">
+                Nada Kerendahan ({detected.cents}c) · Kencangkan Putaran Senar Sedikit ↗
               </span>
             ) : (
-              <span className="text-rose-500">
-                Terlalu Tinggi / Sharp (+{detected.cents} cents) — Kendurkan sedikit
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-amber-500/15 text-amber-700 dark:text-amber-300 font-semibold">
+                Nada Ketinggian (+{detected.cents}c) · Kendurkan Putaran Senar Sedikit ↘
               </span>
             )}
           </div>
         </div>
 
-        {/* Horizontal Cents Bar (-50 to +50) */}
-        <div className="space-y-1.5 pt-2">
-          <div className="flex justify-between text-[10px] font-mono text-slate-400 px-1">
-            <span>-50c (Flat ♭)</span>
-            <span className="text-emerald-500 font-bold">0c (Tepat)</span>
-            <span>+50c (Sharp ♯)</span>
+        {/* Visual Cents Meter */}
+        <div className="space-y-1 pt-1">
+          <div className="flex justify-between text-[10px] font-mono text-zinc-500">
+            <span>Kerendahan (Flat -50c)</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold">PAS (0c)</span>
+            <span>Ketinggian (Sharp +50c)</span>
           </div>
-          <div className="relative h-4 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300 dark:border-slate-700">
-            {/* Center target zone */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-6 bg-emerald-500/25 border-x border-emerald-500/50" />
-            {/* Needle indicator */}
+          <div className="relative h-3.5 rounded-xs bg-zinc-200 dark:bg-zinc-800 overflow-hidden border border-zinc-300 dark:border-zinc-700">
+            <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-7 bg-emerald-500/20 border-x border-emerald-500/50" />
             {detected && (
               <div
                 style={{ left: `${50 + clampedCents}%` }}
-                className={`absolute top-0 bottom-0 w-2.5 -translate-x-1/2 rounded-full transition-all duration-150 ${
-                  isInTune ? "bg-emerald-500 shadow-lg shadow-emerald-500" : "bg-amber-400"
+                className={`absolute top-0 bottom-0 w-2.5 -translate-x-1/2 transition-all duration-150 ${
+                  isInTune ? "bg-emerald-500" : "bg-amber-500"
                 }`}
               />
             )}
@@ -303,84 +316,93 @@ export function TunerTool() {
         </div>
       </div>
 
-      {/* Reference Strings & Quick Simulation */}
-      {mode !== "chromatic" && (
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
-              Nada Referensi Senar ({mode === "guitar" ? "Gitar Standar" : "Bass 4-Senar"}):
-            </span>
-            <span className="text-slate-400 text-[11px]">
-              Klik senar untuk mendengar nada acuan
-            </span>
-          </div>
-
-          <div
-            className={`grid gap-2 ${
-              mode === "guitar" ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-2 sm:grid-cols-4"
-            }`}
-          >
-            {targetStrings.map((str) => {
-              const isMatched =
-                detected &&
-                detected.noteName === str.note &&
-                detected.octave === str.octave;
-              return (
-                <button
-                  key={`${str.label}-${str.note}${str.octave}`}
-                  type="button"
-                  onClick={() => playReferenceString(str, 0)}
-                  className={`p-2.5 rounded-xl border text-center transition-all ${
-                    isMatched
-                      ? "border-emerald-500 bg-emerald-500/15 text-emerald-500"
-                      : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:border-emerald-500/50"
-                  }`}
-                >
-                  <div className="text-[10px] text-slate-400">{str.label}</div>
-                  <div className="text-base font-extrabold font-mono text-slate-900 dark:text-white">
-                    {str.note}
-                    {str.octave}
-                  </div>
-                  <div className="text-[10px] font-mono text-slate-500 flex items-center justify-center gap-1 mt-0.5">
-                    <Volume2 className="w-3 h-3 text-emerald-500" />
-                    {str.freq}Hz
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+      {/* Reference Strings / Notes Selector */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-xs text-zinc-500">
+          <span>
+            Pilih Senar / Nada Referensi (Klik untuk bunyikan & kunci target):
+          </span>
+          {lockedStringIdx !== null && (
+            <button
+              type="button"
+              onClick={() => setLockedStringIdx(null)}
+              className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Reset ke Deteksi Otomatis
+            </button>
+          )}
         </div>
-      )}
 
-      {/* Microphone Start/Stop Button + Test Simulation Buttons */}
-      <div className="flex flex-wrap items-center gap-3">
+        <div
+          className={`grid gap-2 ${
+            mode === "bass" ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3 sm:grid-cols-6"
+          }`}
+        >
+          {targetStrings.map((str, idx) => {
+            const isLocked = lockedStringIdx === idx;
+            const isMatched =
+              detected &&
+              detected.noteName === str.note &&
+              detected.octave === str.octave;
+
+            return (
+              <button
+                key={`${str.label}-${str.note}${str.octave}`}
+                type="button"
+                onClick={() => playReferenceString(str, idx, 0)}
+                className={`p-2.5 rounded-md border text-center transition-colors ${
+                  isLocked || isMatched
+                    ? "border-amber-500 bg-amber-500/15"
+                    : "border-zinc-300 dark:border-zinc-800 bg-[#f6f5f2] dark:bg-[#0d0d0f] hover:border-amber-500/60"
+                }`}
+              >
+                <div className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+                  {str.label}
+                </div>
+                <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 my-0.5">
+                  {str.note}
+                  {str.octave}
+                </div>
+                <div className="text-[9px] text-zinc-500 truncate">{str.desc}</div>
+                <div className="text-[10px] font-mono text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1 mt-1">
+                  <Volume2 className="w-3 h-3" />
+                  <span>Bunyikan</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Microphone Actions */}
+      <div className="flex flex-wrap items-center gap-2.5">
         {micState === "listening" ? (
           <button
             type="button"
             onClick={stopMicrophone}
-            className="flex-1 py-3.5 px-5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-rose-500/20 transition-all"
+            className="flex-1 py-3 px-4 rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold text-xs inline-flex items-center justify-center gap-2 transition-colors"
           >
-            <MicOff className="w-4 h-4" />
+            <MicOff className="w-3.5 h-3.5" />
             <span>Matikan Mikrofon</span>
           </button>
         ) : (
           <button
             type="button"
             onClick={startMicrophone}
-            className="flex-1 py-3.5 px-5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+            className="flex-1 py-3 px-4 rounded-md bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs inline-flex items-center justify-center gap-2 transition-colors"
           >
-            <Mic className="w-4 h-4" />
-            <span>Aktifkan Mikrofon (Izin Browser)</span>
+            <Mic className="w-3.5 h-3.5" />
+            <span>Aktifkan Mikrofon untuk Setem Senar</span>
           </button>
         )}
 
         <button
           type="button"
-          onClick={() => playReferenceString(targetStrings[0], -18)}
-          title="Simulasikan senar yang sedikit Flat (-18 cents) untuk menguji indikator"
-          className="py-3.5 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-amber-500 transition-colors"
+          onClick={() => playReferenceString(targetStrings[0], 0, -18)}
+          title="Coba lihat bagaimana tampilan tuner saat senar masih kendor (-18 cents)"
+          className="py-3 px-3.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:border-amber-500 transition-colors"
         >
-          Uji Sinyal Flat (-18c)
+          Contoh Senar Kendor
         </button>
       </div>
     </div>

@@ -3,37 +3,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Music2,
-  Sliders,
-  GraduationCap,
-  Sparkles,
-  Users,
-  Play,
-  Square,
-  Minus,
-  Plus,
-  X,
-  Volume2,
-  Smartphone,
-} from "lucide-react";
+import { Play, Square, Minus, Plus, X, Volume2, Sliders } from "lucide-react";
 import { useMusicApp } from "@/context/MusicAppContext";
 import { InstrumentType } from "@/types/music";
 import { getAudioContext, playChordPreview } from "@/lib/audioSynth";
 
 const BOTTOM_TABS = [
-  { href: "/", label: "Katalog", icon: Music2 },
-  { href: "/practice", label: "Latihan", icon: Sliders },
-  { href: "/courses", label: "Kursus", icon: GraduationCap },
-  { href: "/ai-studio", label: "AI Studio", icon: Sparkles },
-  { href: "/community", label: "Komunitas", icon: Users },
+  { href: "/", label: "Katalog" },
+  { href: "/practice", label: "Latihan" },
+  { href: "/courses", label: "Kursus" },
+  { href: "/ai-studio", label: "Studio" },
+  { href: "/community", label: "Komunitas" },
 ];
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { preferredInstrument, setPreferredInstrument } = useMusicApp();
 
-  // Quick Pocket Metronome & Instrument Drawer for Mobile
   const [quickDrawerOpen, setQuickDrawerOpen] = useState(false);
   const [quickBpm, setQuickBpm] = useState(100);
   const [quickPlaying, setQuickPlaying] = useState(false);
@@ -87,37 +73,34 @@ export function MobileBottomNav() {
   return (
     <>
       {/* Floating Quick Tool Button (Mobile Only) */}
-      <div className="lg:hidden fixed bottom-20 right-4 z-40">
+      <div className="lg:hidden fixed bottom-16 right-4 z-40">
         <button
           type="button"
           onClick={() => setQuickDrawerOpen((o) => !o)}
-          aria-label="Buka Alat Cepat Mobile"
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full font-bold text-xs shadow-xl transition-all active:scale-95 ${
+          aria-label="Buka Alat Cepat"
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-md font-semibold text-xs border transition-colors ${
             quickPlaying
-              ? "bg-amber-400 text-slate-950 animate-pulse shadow-amber-500/30"
-              : "bg-emerald-500 text-slate-950 shadow-emerald-500/30"
+              ? "bg-amber-500 text-zinc-950 border-amber-400"
+              : "bg-zinc-900 text-zinc-100 border-zinc-700"
           }`}
         >
-          <Sliders className="w-4 h-4" />
-          <span>{quickPlaying ? `${quickBpm} BPM` : "Alat Cepat"}</span>
+          <Sliders className="w-3.5 h-3.5 text-amber-400" />
+          <span>{quickPlaying ? `${quickBpm} BPM` : "Tempo Cepat"}</span>
         </button>
       </div>
 
-      {/* Quick Mobile Practice Drawer (Bottom Sheet) */}
+      {/* Quick Mobile Practice Drawer */}
       {quickDrawerOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/60 backdrop-blur-xs">
-          <div className="rounded-t-3xl border-t border-slate-700 bg-white dark:bg-slate-900 p-5 space-y-5 shadow-2xl animate-in slide-in-from-bottom">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                  Kontrol Cepat Mobile (Sambil Bermain)
-                </h3>
-              </div>
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60">
+          <div className="border-t border-zinc-700 bg-[#f6f5f2] dark:bg-zinc-900 p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Pengaturan Cepat
+              </h3>
               <button
                 type="button"
                 onClick={() => setQuickDrawerOpen(false)}
-                className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500"
+                className="p-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 text-zinc-500"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -125,8 +108,8 @@ export function MobileBottomNav() {
 
             {/* Quick Instrument Switcher */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                Instrumen Aktif (Diagram & Bunyi Chord):
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                Instrumen:
               </span>
               <div className="grid grid-cols-3 gap-2">
                 {(["guitar", "bass", "piano"] as InstrumentType[]).map((inst) => (
@@ -134,38 +117,32 @@ export function MobileBottomNav() {
                     key={inst}
                     type="button"
                     onClick={() => setPreferredInstrument(inst)}
-                    className={`py-2.5 rounded-xl text-xs font-bold capitalize transition-all active:scale-95 ${
+                    className={`py-2 rounded-md text-xs font-semibold border transition-colors ${
                       preferredInstrument === inst
-                        ? "bg-emerald-500 text-slate-950 shadow-sm"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                        ? "bg-amber-500 text-zinc-950 border-amber-500"
+                        : "bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300"
                     }`}
                   >
-                    {inst === "guitar"
-                      ? "🎸 Gitar"
-                      : inst === "bass"
-                      ? "🎸 Bass"
-                      : "🎹 Piano"}
+                    {inst === "guitar" ? "Gitar" : inst === "bass" ? "Bass" : "Piano"}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Quick Pocket Metronome */}
-            <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
+            {/* Quick Metronome */}
+            <div className="p-3.5 rounded-md bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Metronome Saku (4/4)
+                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Metronome (4/4)
                 </span>
                 <div className="flex items-center gap-1.5">
                   {[0, 1, 2, 3].map((b) => (
                     <span
                       key={b}
-                      className={`w-2.5 h-2.5 rounded-full transition-transform ${
+                      className={`w-2 h-2 rounded-xs ${
                         quickPlaying && quickBeat === b
-                          ? b === 0
-                            ? "bg-amber-400 scale-125"
-                            : "bg-emerald-500 scale-125"
-                          : "bg-slate-300 dark:bg-slate-800"
+                          ? "bg-amber-500"
+                          : "bg-zinc-300 dark:bg-zinc-800"
                       }`}
                     />
                   ))}
@@ -176,20 +153,20 @@ export function MobileBottomNav() {
                 <button
                   type="button"
                   onClick={() => setQuickBpm((b) => Math.max(40, b - 5))}
-                  className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 active:scale-95"
+                  className="p-2.5 rounded-md border border-zinc-300 dark:border-zinc-800"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <div className="text-center">
-                  <span className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white">
+                <div className="text-center font-mono">
+                  <span className="text-xl font-bold text-zinc-900 dark:text-white">
                     {quickBpm}
                   </span>
-                  <span className="text-xs text-slate-400 ml-1">BPM</span>
+                  <span className="text-xs text-zinc-500 ml-1">BPM</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setQuickBpm((b) => Math.min(220, b + 5))}
-                  className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 active:scale-95"
+                  className="p-2.5 rounded-md border border-zinc-300 dark:border-zinc-800"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -197,10 +174,10 @@ export function MobileBottomNav() {
                 <button
                   type="button"
                   onClick={() => setQuickPlaying((p) => !p)}
-                  className={`px-5 py-3 rounded-xl font-bold text-xs inline-flex items-center gap-1.5 active:scale-95 ${
+                  className={`px-4 py-2.5 rounded-md font-semibold text-xs inline-flex items-center gap-1.5 ${
                     quickPlaying
-                      ? "bg-rose-500 text-white"
-                      : "bg-emerald-500 text-slate-950"
+                      ? "bg-red-600 text-white"
+                      : "bg-amber-500 text-zinc-950"
                   }`}
                 >
                   {quickPlaying ? (
@@ -218,11 +195,11 @@ export function MobileBottomNav() {
               </div>
             </div>
 
-            {/* Quick Chord Sound Pad for Ear Reference */}
+            {/* Quick Chord Pad */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                <Volume2 className="w-3.5 h-3.5 text-emerald-500" />
-                Tap Cepat Bunyi Chord Dasar:
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <Volume2 className="w-3.5 h-3.5" />
+                Nada Referensi Chord:
               </span>
               <div className="grid grid-cols-6 gap-1.5">
                 {["C", "D", "Em", "F", "G", "Am"].map((ch) => (
@@ -230,7 +207,7 @@ export function MobileBottomNav() {
                     key={ch}
                     type="button"
                     onClick={() => playChordPreview(ch, preferredInstrument)}
-                    className="py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 font-mono text-xs font-bold active:scale-95 transition-all"
+                    className="py-2 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono text-xs font-semibold"
                   >
                     {ch}
                   </button>
@@ -241,14 +218,13 @@ export function MobileBottomNav() {
         </div>
       )}
 
-      {/* Fixed Bottom Tab Bar for Mobile Phones */}
+      {/* Fixed Bottom Navigation Bar (Clean text tabs, no icons) */}
       <nav
-        aria-label="Navigasi Bawah Mobile"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/90 dark:border-slate-800/90 bg-white/95 dark:bg-slate-950/95 backdrop-blur-lg px-2 py-1.5"
+        aria-label="Navigasi Bawah"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-300 dark:border-zinc-800 bg-[#f6f5f2] dark:bg-[#0d0d0f] px-2"
       >
-        <div className="grid grid-cols-5 gap-1 max-w-md mx-auto">
+        <div className="grid grid-cols-5 max-w-md mx-auto">
           {BOTTOM_TABS.map((item) => {
-            const Icon = item.icon;
             const isActive =
               item.href === "/"
                 ? pathname === "/" || pathname.startsWith("/songs")
@@ -258,22 +234,16 @@ export function MobileBottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center py-1.5 rounded-xl transition-all active:scale-95 ${
+                className={`relative py-3.5 text-center text-xs transition-colors ${
                   isActive
-                    ? "text-emerald-500 font-bold"
-                    : "text-slate-500 dark:text-slate-400"
+                    ? "text-zinc-950 dark:text-white font-semibold"
+                    : "text-zinc-500 dark:text-zinc-400"
                 }`}
               >
-                <div
-                  className={`p-1 rounded-lg ${
-                    isActive ? "bg-emerald-500/15" : ""
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] mt-0.5 tracking-tight">
-                  {item.label}
-                </span>
+                {isActive && (
+                  <span className="absolute top-0 left-2 right-2 h-0.5 bg-amber-500" />
+                )}
+                {item.label}
               </Link>
             );
           })}

@@ -5,9 +5,9 @@ import { StudioNavbar } from "@/components/layout/StudioNavbar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 
 export const metadata: Metadata = {
-  title: "Sonara — Music Learning Platform, Chord & AI Practice Studio",
+  title: "Sonara — Ruang Belajar Musik & Katalog Chord",
   description:
-    "Platform belajar musik terpadu: katalog lagu & chord berizin, transpose deterministik, diagram Gitar/Bass/Piano, metronome, tuner, loop latihan, dan analisis AI.",
+    "Platform belajar musik, katalog chord terkurasi, transpose nada dasar, diagram Gitar/Bass/Piano, metronome, tuner, dan latihan loop audio.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -19,7 +19,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#10b981",
+  themeColor: "#d97706",
 };
 
 export default function RootLayout({
@@ -29,27 +29,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors pb-20 lg:pb-0">
+      <body className="min-h-screen flex flex-col bg-[#f6f5f2] dark:bg-[#0d0d0f] text-zinc-900 dark:text-zinc-100 transition-colors pb-16 lg:pb-0">
         <MusicAppProvider>
           <StudioNavbar />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-slate-200/80 dark:border-slate-900 bg-white/60 dark:bg-slate-950/80 py-6 mt-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <footer className="border-t border-zinc-300 dark:border-zinc-800 bg-[#efede8] dark:bg-[#111114] py-6 mt-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 dark:text-zinc-400">
               <div className="flex items-center gap-2.5">
                 <img
                   src="/icon-sonara.png"
                   alt="Sonara"
-                  className="w-6 h-6 rounded-md object-cover border border-amber-500/30"
+                  className="w-5 h-5 rounded-xs object-cover border border-zinc-700"
                 />
-                <span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
-                    Sonara Music Learning Platform
-                  </span>{" "}
-                  — Spesifikasi v0.2
+                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                  Sonara
                 </span>
+                <span>— Ruang Latihan & Repertoar Musik</span>
               </div>
-              <div className="flex items-center gap-4">
-                <span>Seluruh konten katalog berstatus lisensi terverifikasi (Data Dummy MVP)</span>
+              <div>
+                <span>Katalog berlisensi & alat latihan web interaktif</span>
               </div>
             </div>
           </footer>
